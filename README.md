@@ -18,6 +18,7 @@ Run these commands to see some sample behavior:
     composer audit
     composer audit --format=simple
     composer audit --format=json
+    composer audit --format=json --output-file=report.json
     composer validate
     composer require symfony/symfony --update-with-all-dependencies
     composer audit
