@@ -11,6 +11,7 @@ use FancyGuy\Composer\SecurityCheck\Exception\ExceptionInterface;
 use FancyGuy\Composer\SecurityCheck\Formatter\JsonFormatter;
 use FancyGuy\Composer\SecurityCheck\Formatter\SimpleFormatter;
 use FancyGuy\Composer\SecurityCheck\Formatter\TextFormatter;
+use FancyGuy\Composer\SecurityCheck\Output\FileOutput;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,6 +27,7 @@ class AuditCommand extends BaseCommand
             ->setDefinition(array(
                 new InputOption('audit-db', '', InputOption::VALUE_REQUIRED, 'Path to the advisory database'),
                 new InputOption('format', '', InputOption::VALUE_REQUIRED, 'Output format', 'text'),
+                new InputOption('output-file', '', InputOption::VALUE_REQUIRED, 'File to append the report output to'),
                 new InputOption('endpoint', '', InputOption::VALUE_REQUIRED, 'Security checker server URL', HttpCheckerInterface::DEFAULT_ENDPOINT),
                 new InputOption('timeout', '', InputOption::VALUE_REQUIRED, 'HTTP timeout in seconds', HttpCheckerInterface::DEFAULT_TIMEOUT),
                 new InputOption('file', '', InputOption::VALUE_REQUIRED, 'Path to composer.lock file', './composer.lock'),
@@ -87,7 +89,17 @@ EOF
             return 127;
         }
 
-        $formatter->displayResults($output, $composerFile, $vulnerabilities);
+        if ($outputFile = $input->getOption('output-file')) {
+            $formatter->displayResults(
+                new FileOutput($outputFile, $output->getVerbosity(), $output->isDecorated(), $output->getFormatter()),
+                $composerFile,
+                $vulnerabilities
+            );
+            $output->writeln(sprintf('Report written to: %s', $outputFile));
+        } else {
+            $formatter->displayResults($output, $composerFile, $vulnerabilities);
+        }
+
 
         if ($checker->getLastVulnerabilityCount() > 0) {
             return 1;
