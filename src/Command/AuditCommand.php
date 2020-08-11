@@ -89,11 +89,17 @@ EOF
             return 127;
         }
 
-        $formatterOutput = ($outputFile = $input->getOption('output-file'))
-            ? new FileOutput($outputFile, $output->getVerbosity(), $output->isDecorated(), $output->getFormatter())
-            : $output;
+        if ($outputFile = $input->getOption('output-file')) {
+            $formatter->displayResults(
+                new FileOutput($outputFile, $output->getVerbosity(), $output->isDecorated(), $output->getFormatter()),
+                $composerFile,
+                $vulnerabilities
+            );
+            $output->writeln(sprintf('Report written to: %s', $outputFile));
+        } else {
+            $formatter->displayResults($output, $composerFile, $vulnerabilities);
+        }
 
-        $formatter->displayResults($formatterOutput, $composerFile, $vulnerabilities);
 
         if ($checker->getLastVulnerabilityCount() > 0) {
             return 1;

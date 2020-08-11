@@ -18,10 +18,10 @@ class FileOutput extends StreamOutput
      */
     public function __construct(string $filePath, int $verbosity = self::VERBOSITY_NORMAL, bool $decorated = null, OutputFormatterInterface $formatter = null)
     {
-        if ($formatter !== null) {
-            $formatter->note(sprintf('Report will be appended to: %s', $filePath));
+        if (false === ($writeStream = fopen($filePath, 'a', false))) {
+            throw new RuntimeException(sprintf('Could not open write stream to: %s', $filePath));
         }
-        parent::__construct(fopen($filePath, 'a', false), $verbosity, $decorated, $formatter);
+        parent::__construct($writeStream, $verbosity, $decorated, $formatter);
     }
 
     /**
